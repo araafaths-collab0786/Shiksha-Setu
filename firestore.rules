@@ -1,0 +1,185 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * SHIKSHASETU SECURITY RULES DOCUMENTATION
+     * 
+     * Core Philosophy:
+     * This ruleset enforces a strict User-Ownership model for private data and a Public-Authenticated 
+     * model for educational content. The system is designed to prioritize rapid prototyping by 
+     * focusing on authorization (who can access) rather than strict schema validation (data types).
+     *
+     * Data Structure:
+     * 1. Public Content: Subjects, Topics, and Learning Content are top-level and readable by 
+     *    any signed-in user.
+     * 2. Private Data: All user-specific data (Profiles, Quiz Attempts, Doubts, Progress) is 
+     *    nested under /users/{userId}/. 
+     *
+     * Key Security Decisions:
+     * - Authentication: All data access requires a valid Firebase Auth token.
+     * - Ownership: Path-based ownership is used exclusively for private data. The {userId} wildcard 
+     *   in the path must match the request.auth.uid.
+     * - Denormalization: Documents in user subcollections (like QuizAttempt) are expected to 
+     *   include a 'userId' field that matches the path UID to ensure relational integrity.
+     * - Admin Controls: Top-level content (Subjects, Topics) is read-only for standard users. 
+     *   Write access is restricted (if false) as no specific admin roles were defined in the IR.
+     */
+
+    // --- Helper Functions ---
+
+    /** @description Checks if the user is authenticated. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the user UID matches the provided ID. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Checks if the user is the owner and the document exists. Used for updates/deletes. */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for user profile documents.
+     * @path /users/{userId}
+     * @allow (create) if auth.uid == userId and data.id == userId.
+     * @deny (update) if attempting to change the 'id' field.
+     * @principle Enforces path-based ownership and relational integrity for user profiles.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if false; // Deletion of profiles is restricted in prototype.
+    }
+
+    /**
+     * @description Read-only collection for academic subjects.
+     * @path /subjects/{subjectId}
+     * @allow (get) if any user is signed in.
+     * @deny (create) Always denied; managed via admin tools.
+     * @principle Public read access for authenticated users, restricted writes.
+     */
+    match /subjects/{subjectId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Read-only collection for academic topics.
+     * @path /topics/{topicId}
+     * @allow (list) if any user is signed in.
+     * @deny (update) Always denied.
+     * @principle Public read access for authenticated users.
+     */
+    match /topics/{topicId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Collection for educational materials.
+     * @path /learning_content/{contentId}
+     * @allow (get) if any user is signed in.
+     * @deny (delete) Always denied.
+     * @principle Centralized repository for shared learning content.
+     */
+    match /learning_content/{contentId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
+
+      /**
+       * @description Questions associated with a specific piece of learning content (Quiz).
+       * @path /learning_content/{contentId}/quiz_questions/{questionId}
+       */
+      match /quiz_questions/{questionId} {
+        allow get, list: if isSignedIn();
+        allow create, update, delete: if false;
+      }
+    }
+
+    /**
+     * @description User's private quiz history.
+     * @path /users/{userId}/quiz_attempts/{attemptId}
+     * @allow (create) if owner and userId field matches path.
+     * @deny (list) if the userId in the path does not match the requester.
+     * @principle Strict path-based ownership for private activity tracking.
+     */
+    match /users/{userId}/quiz_attempts/{attemptId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Answers provided within a specific quiz attempt.
+       */
+      match /answers/{answerId} {
+        allow get, list: if isOwner(userId);
+        allow create, update, delete: if isOwner(userId);
+      }
+    }
+
+    /**
+     * @description Academic doubts submitted by the user.
+     * @path /users/{userId}/doubts/{doubtId}
+     * @allow (create) if owner and userId in data matches.
+     * @principle Ensures users only see and manage their own academic inquiries.
+     */
+    match /users/{userId}/doubts/{doubtId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description AI-generated solution for a specific doubt.
+       * @path /users/{userId}/doubts/{doubtId}/solution
+       * @deny (create) Users cannot author their own solutions.
+       */
+      match /solution {
+        allow get: if isOwner(userId);
+        allow create, update, delete: if false;
+      }
+    }
+
+    /**
+     * @description Tracks completion and download status of learning content.
+     * @path /users/{userId}/content_progress/{progressId}
+     * @allow (update) if owner; used to sync offline progress or download status.
+     * @principle Facilitates the "download option" by tracking per-user content state.
+     */
+    match /users/{userId}/content_progress/{progressId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Personalized learning paths for the user.
+     * @path /users/{userId}/learning_paths/{pathId}
+     */
+    match /users/{userId}/learning_paths/{pathId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Individual items/recommendations within a learning path.
+       */
+      match /items/{itemId} {
+        allow get, list: if isOwner(userId);
+        allow create, update, delete: if isOwner(userId);
+      }
+    }
+  }
+}

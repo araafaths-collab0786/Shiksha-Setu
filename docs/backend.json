@@ -1,0 +1,809 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user profile within the ShikshaSetu application, storing personal information and preferences.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address, used for communication (not authentication).",
+          "format": "email"
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "description": "The user's preferred language for the application interface (e.g., 'en', 'hi', 'ta')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user's profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "preferredLanguage",
+        "createdAt"
+      ]
+    },
+    "Subject": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Subject",
+      "type": "object",
+      "description": "Represents a high-level academic subject, such as 'Mathematics' or 'Science'.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Subject entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the academic subject (e.g., 'Mathematics', 'Physics')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the subject."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to an image representing the subject for UI display.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
+      ]
+    },
+    "Topic": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Topic",
+      "type": "object",
+      "description": "Represents a specific topic or sub-category within a broader academic subject.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Topic entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the topic (e.g., 'Algebra', 'Photosynthesis')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the topic."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to the Subject this topic belongs to. (Relationship: Subject 1:N Topic)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "subjectId"
+      ]
+    },
+    "LearningContent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LearningContent",
+      "type": "object",
+      "description": "Represents any piece of educational material available in the app, such as modules, videos, textbooks, or quizzes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the LearningContent entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the learning content."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the learning content."
+        },
+        "contentType": {
+          "type": "string",
+          "description": "The type of content (e.g., 'module', 'video', 'textbook', 'quiz')."
+        },
+        "contentUrl": {
+          "type": "string",
+          "description": "URL to the actual educational resource (e.g., video file, PDF, interactive module).",
+          "format": "uri"
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "description": "URL to a thumbnail image or video preview.",
+          "format": "uri"
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to the primary Subject this content belongs to. (Relationship: Subject 1:N LearningContent)"
+        },
+        "topicIds": {
+          "type": "array",
+          "description": "References to Topics covered by this content. (Relationship: Topic N:N LearningContent)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "durationMinutes": {
+          "type": "number",
+          "description": "The estimated duration of the content in minutes, if applicable (e.g., for videos or modules)."
+        },
+        "fileSizeBytes": {
+          "type": "number",
+          "description": "The size of the content file in bytes, relevant for download management."
+        },
+        "isDownloadable": {
+          "type": "boolean",
+          "description": "Indicates whether this content can be downloaded for offline access."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the learning content was added.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the learning content details were last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "contentType",
+        "contentUrl",
+        "subjectId",
+        "topicIds",
+        "isDownloadable",
+        "createdAt"
+      ]
+    },
+    "QuizQuestion": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QuizQuestion",
+      "type": "object",
+      "description": "Represents an individual question within a quiz (which is a type of LearningContent).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the QuizQuestion entity."
+        },
+        "learningContentId": {
+          "type": "string",
+          "description": "Reference to the LearningContent entity that represents the quiz this question belongs to. (Relationship: LearningContent 1:N QuizQuestion)"
+        },
+        "questionText": {
+          "type": "string",
+          "description": "The text of the question."
+        },
+        "questionType": {
+          "type": "string",
+          "description": "The type of question (e.g., 'multiple_choice', 'true_false', 'fill_in_the_blank')."
+        },
+        "options": {
+          "type": "array",
+          "description": "An array of possible answer options for multiple-choice questions.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "correctAnswer": {
+          "type": "string",
+          "description": "The correct answer to the question."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "An explanation for the correct answer, provided after an attempt."
+        }
+      },
+      "required": [
+        "id",
+        "learningContentId",
+        "questionText",
+        "questionType",
+        "correctAnswer"
+      ]
+    },
+    "QuizAttempt": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QuizAttempt",
+      "type": "object",
+      "description": "Records a user's single attempt at a specific quiz.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the QuizAttempt entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who made the attempt. (Relationship: User 1:N QuizAttempt)"
+        },
+        "learningContentId": {
+          "type": "string",
+          "description": "Reference to the LearningContent entity (quiz) that was attempted. (Relationship: LearningContent 1:N QuizAttempt)"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Timestamp when the quiz attempt started.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "Timestamp when the quiz attempt ended.",
+          "format": "date-time"
+        },
+        "score": {
+          "type": "number",
+          "description": "The score obtained by the user in this attempt."
+        },
+        "maxScore": {
+          "type": "number",
+          "description": "The maximum possible score for the quiz."
+        },
+        "percentageScore": {
+          "type": "number",
+          "description": "The score as a percentage of the maximum possible score (0-100)."
+        },
+        "isCompleted": {
+          "type": "boolean",
+          "description": "Indicates whether the quiz attempt was completed."
+        },
+        "attemptNumber": {
+          "type": "number",
+          "description": "The sequential number of this attempt for the user on this quiz."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "learningContentId",
+        "startTime",
+        "score",
+        "maxScore",
+        "percentageScore",
+        "isCompleted",
+        "attemptNumber"
+      ]
+    },
+    "QuizAnswer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QuizAnswer",
+      "type": "object",
+      "description": "Stores a user's specific answer to a question within a quiz attempt.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the QuizAnswer entity."
+        },
+        "quizAttemptId": {
+          "type": "string",
+          "description": "Reference to the QuizAttempt this answer belongs to. (Relationship: QuizAttempt 1:N QuizAnswer)"
+        },
+        "quizQuestionId": {
+          "type": "string",
+          "description": "Reference to the QuizQuestion that was answered. (Relationship: QuizQuestion 1:N QuizAnswer)"
+        },
+        "selectedAnswer": {
+          "type": "string",
+          "description": "The answer selected or provided by the user."
+        },
+        "isCorrect": {
+          "type": "boolean",
+          "description": "Indicates whether the user's selected answer was correct."
+        }
+      },
+      "required": [
+        "id",
+        "quizAttemptId",
+        "quizQuestionId",
+        "selectedAnswer",
+        "isCorrect"
+      ]
+    },
+    "Doubt": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Doubt",
+      "type": "object",
+      "description": "Records a student's academic doubt submitted to the AI solver.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Doubt entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who submitted the doubt. (Relationship: User 1:N Doubt)"
+        },
+        "doubtText": {
+          "type": "string",
+          "description": "The textual representation of the student's doubt."
+        },
+        "doubtAudioUrl": {
+          "type": "string",
+          "description": "Optional URL to an audio recording of the doubt, if submitted via voice.",
+          "format": "uri"
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "Timestamp when the doubt was submitted.",
+          "format": "date-time"
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Optional reference to the Subject related to the doubt. (Relationship: Subject 1:N Doubt)"
+        },
+        "topicId": {
+          "type": "string",
+          "description": "Optional reference to the Topic related to the doubt. (Relationship: Topic 1:N Doubt)"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "doubtText",
+        "submittedAt"
+      ]
+    },
+    "Solution": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Solution",
+      "type": "object",
+      "description": "Records the AI-generated solution or explanation for a submitted doubt.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Solution entity."
+        },
+        "doubtId": {
+          "type": "string",
+          "description": "Reference to the Doubt this solution addresses. (Relationship: Doubt 1:1 Solution)"
+        },
+        "solutionText": {
+          "type": "string",
+          "description": "The textual content of the AI-generated solution."
+        },
+        "solutionAudioUrl": {
+          "type": "string",
+          "description": "Optional URL to an audio recording of the solution, if read aloud.",
+          "format": "uri"
+        },
+        "generatedAt": {
+          "type": "string",
+          "description": "Timestamp when the solution was generated by the AI.",
+          "format": "date-time"
+        },
+        "knowledgeBaseUsed": {
+          "type": "string",
+          "description": "Identifier for the knowledge base or AI model version used to generate the solution (e.g., 'offline-v1', 'cloud-v2')."
+        },
+        "processingMode": {
+          "type": "string",
+          "description": "Indicates whether the solution was generated 'offline' or 'online'."
+        }
+      },
+      "required": [
+        "id",
+        "doubtId",
+        "solutionText",
+        "generatedAt",
+        "processingMode"
+      ]
+    },
+    "UserContentProgress": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserContentProgress",
+      "type": "object",
+      "description": "Tracks a user's engagement, completion status, and download status for specific learning content.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserContentProgress entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User whose progress is being tracked. (Relationship: User 1:N UserContentProgress)"
+        },
+        "learningContentId": {
+          "type": "string",
+          "description": "Reference to the LearningContent this progress entry is for. (Relationship: LearningContent 1:N UserContentProgress)"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current progress status of the content (e.g., 'not_started', 'in_progress', 'completed')."
+        },
+        "lastAccessedAt": {
+          "type": "string",
+          "description": "Timestamp when the user last accessed this content.",
+          "format": "date-time"
+        },
+        "progressPercentage": {
+          "type": "number",
+          "description": "The percentage of completion for the content (0-100). For videos, it could be watch percentage; for modules, pages read percentage."
+        },
+        "isDownloaded": {
+          "type": "boolean",
+          "description": "Indicates if the content is currently downloaded for offline access."
+        },
+        "downloadedAt": {
+          "type": "string",
+          "description": "Timestamp when the content download was completed, if applicable.",
+          "format": "date-time"
+        },
+        "syncStatus": {
+          "type": "string",
+          "description": "The synchronization status of this progress entry ('synced', 'pending_sync', 'error_sync')."
+        },
+        "offlineLastUpdatedAt": {
+          "type": "string",
+          "description": "Timestamp of the last local update on the device, used for conflict resolution during sync.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "learningContentId",
+        "status",
+        "lastAccessedAt",
+        "progressPercentage",
+        "isDownloaded",
+        "syncStatus"
+      ]
+    },
+    "UserLearningPath": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserLearningPath",
+      "type": "object",
+      "description": "Represents a personalized learning path generated or assigned to a user by the AI.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserLearningPath entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User this learning path belongs to. (Relationship: User 1:N UserLearningPath)"
+        },
+        "title": {
+          "type": "string",
+          "description": "A descriptive title for the learning path (e.g., 'Master Algebra', 'Improve Physics Concepts')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the learning path's objectives."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the learning path (e.g., 'active', 'completed', 'archived')."
+        },
+        "generatedAt": {
+          "type": "string",
+          "description": "Timestamp when the learning path was initially generated.",
+          "format": "date-time"
+        },
+        "lastUpdatedAt": {
+          "type": "string",
+          "description": "Timestamp when the learning path was last updated or re-evaluated by the AI.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "status",
+        "generatedAt"
+      ]
+    },
+    "LearningPathItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LearningPathItem",
+      "type": "object",
+      "description": "Represents a specific content or topic recommendation within a user's personalized learning path.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the LearningPathItem entity."
+        },
+        "userLearningPathId": {
+          "type": "string",
+          "description": "Reference to the UserLearningPath this item belongs to. (Relationship: UserLearningPath 1:N LearningPathItem)"
+        },
+        "learningContentId": {
+          "type": "string",
+          "description": "Reference to the LearningContent recommended in this path item. (Relationship: LearningContent 1:N LearningPathItem)"
+        },
+        "order": {
+          "type": "number",
+          "description": "The sequential order of this item within the learning path."
+        },
+        "recommendationReason": {
+          "type": "string",
+          "description": "Text explaining why this content was recommended by the AI."
+        },
+        "isCompleted": {
+          "type": "boolean",
+          "description": "Indicates whether the user has completed this learning path item."
+        },
+        "completedAt": {
+          "type": "string",
+          "description": "Timestamp when the user completed this learning path item.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userLearningPathId",
+        "learningContentId",
+        "order",
+        "recommendationReason",
+        "isCompleted"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores individual user profiles, identified by their Firebase Authentication UID. Access is restricted to the owning user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subjects/{subjectId}",
+        "definition": {
+          "entityName": "Subject",
+          "schema": {
+            "$ref": "#/backend/entities/Subject"
+          },
+          "description": "Globally accessible collection of academic subjects. Readable by all authenticated users.",
+          "params": [
+            {
+              "name": "subjectId",
+              "description": "The unique identifier for the subject."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/topics/{topicId}",
+        "definition": {
+          "entityName": "Topic",
+          "schema": {
+            "$ref": "#/backend/entities/Topic"
+          },
+          "description": "Globally accessible collection of topics within subjects. Includes 'subjectId' for relationship and filtering. Readable by all authenticated users.",
+          "params": [
+            {
+              "name": "topicId",
+              "description": "The unique identifier for the topic."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/learning_content/{contentId}",
+        "definition": {
+          "entityName": "LearningContent",
+          "schema": {
+            "$ref": "#/backend/entities/LearningContent"
+          },
+          "description": "Globally accessible collection of all educational materials. Includes 'subjectId' and 'topicIds' for context and discoverability, and 'isDownloadable'. Readable by all authenticated users.",
+          "params": [
+            {
+              "name": "contentId",
+              "description": "The unique identifier for the learning content."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/learning_content/{contentId}/quiz_questions/{questionId}",
+        "definition": {
+          "entityName": "QuizQuestion",
+          "schema": {
+            "$ref": "#/backend/entities/QuizQuestion"
+          },
+          "description": "Questions belonging to a specific quiz (a type of LearningContent). Access inherited from the parent learning content. Includes 'learningContentId' implicitly from the path.",
+          "params": [
+            {
+              "name": "contentId",
+              "description": "The unique identifier of the parent learning content (quiz)."
+            },
+            {
+              "name": "questionId",
+              "description": "The unique identifier for the quiz question."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/quiz_attempts/{attemptId}",
+        "definition": {
+          "entityName": "QuizAttempt",
+          "schema": {
+            "$ref": "#/backend/entities/QuizAttempt"
+          },
+          "description": "Records a user's single attempt at a quiz. Strictly user-private. Includes 'userId' (from path) and 'learningContentId' for context. Allows atomic creation/updates.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user."
+            },
+            {
+              "name": "attemptId",
+              "description": "The unique identifier for the quiz attempt."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/quiz_attempts/{attemptId}/answers/{answerId}",
+        "definition": {
+          "entityName": "QuizAnswer",
+          "schema": {
+            "$ref": "#/backend/entities/QuizAnswer"
+          },
+          "description": "Stores a user's specific answer within a quiz attempt. Strictly user-private. Includes 'userId' and 'quizAttemptId' (from path) and 'quizQuestionId' for context.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user."
+            },
+            {
+              "name": "attemptId",
+              "description": "The unique identifier of the parent quiz attempt."
+            },
+            {
+              "name": "answerId",
+              "description": "The unique identifier for the quiz answer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/doubts/{doubtId}",
+        "definition": {
+          "entityName": "Doubt",
+          "schema": {
+            "$ref": "#/backend/entities/Doubt"
+          },
+          "description": "Records a student's academic doubt. Strictly user-private. Includes 'userId' (from path) and 'subjectId', 'topicId' for context. Allows atomic creation/updates.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user."
+            },
+            {
+              "name": "doubtId",
+              "description": "The unique identifier for the doubt."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/doubts/{doubtId}/solution",
+        "definition": {
+          "entityName": "Solution",
+          "schema": {
+            "$ref": "#/backend/entities/Solution"
+          },
+          "description": "Stores the AI-generated solution for a specific doubt. Strictly user-private, nested under the doubt. Includes 'userId' and 'doubtId' implicitly from the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user."
+            },
+            {
+              "name": "doubtId",
+              "description": "The unique identifier of the parent doubt."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/content_progress/{progressId}",
+        "definition": {
+          "entityName": "UserContentProgress",
+          "schema": {
+            "$ref": "#/backend/entities/UserContentProgress"
+          },
+          "description": "Tracks a user's engagement, completion status, and download status for specific learning content. Strictly user-private. Includes 'userId' (from path) and 'learningContentId' for context. Supports the 'download option' by tracking 'isDownloaded'.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user."
+            },
+            {
+              "name": "progressId",
+              "description": "The unique identifier for the user's content progress entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/learning_paths/{pathId}",
+        "definition": {
+          "entityName": "UserLearningPath",
+          "schema": {
+            "$ref": "#/backend/entities/UserLearningPath"
+          },
+          "description": "Represents a personalized learning path for a user. Strictly user-private. Includes 'userId' (from path). Allows atomic creation/updates.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user."
+            },
+            {
+              "name": "pathId",
+              "description": "The unique identifier for the user's learning path."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/learning_paths/{pathId}/items/{itemId}",
+        "definition": {
+          "entityName": "LearningPathItem",
+          "schema": {
+            "$ref": "#/backend/entities/LearningPathItem"
+          },
+          "description": "Represents a specific content recommendation within a user's personalized learning path. Strictly user-private. Includes 'userId' and 'userLearningPathId' (from path) and 'learningContentId' for context.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user."
+            },
+            {
+              "name": "pathId",
+              "description": "The unique identifier of the parent user learning path."
+            },
+            {
+              "name": "itemId",
+              "description": "The unique identifier for the learning path item."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure prioritizes clarity, security, and scalability by strictly adhering to the core design principles. The primary strategy involves a clear separation of globally accessible content from user-specific, private data. Globally accessible entities like Subjects, Topics, and Learning Content are placed in top-level collections (`/subjects`, `/topics`, `/learning_content`) where they can be read by any authenticated user. This approach directly addresses the 'Subjects option doesn't work' problem by making content easily queryable and listable for all users with simple, broad read rules for authenticated users.\n\nAuthorization Independence is achieved primarily through two mechanisms:\n1.  **Path-Based Ownership for Private Data**: All user-specific data (e.g., profiles, quiz attempts, doubts, learning paths, content progress) is strictly nested under a user's document using the pattern `/users/{userId}/<subcollection>/{docId}`. This design ensures that the `userId` is directly present in the path for every user-owned document. Consequently, security rules can enforce ownership by simply comparing `request.auth.uid` with the `{userId}` wildcard in the path, eliminating the need for `get()` operations to check parent documents or denormalized `ownerId` fields in the document itself (though foreign keys are included for query efficiency). For example, `match /users/{userId}/quiz_attempts/{attemptId}` would simply require `allow read, write: if request.auth.uid == userId;`. This makes rules robust, atomic, and easy to debug, as each document's authorization context is self-contained within its path.\n2.  **Explicit Denormalization for Query Context**: While path-based ownership handles primary authorization, for entities like `QuizAttempt`, `Doubt`, `UserContentProgress`, `UserLearningPath`, and `LearningPathItem`, relevant foreign keys (e.g., `learningContentId`, `subjectId`, `topicId`) are explicitly included in the document data. This allows for efficient querying and filtering (e.g., finding all quiz attempts for a specific `learningContentId`) without requiring additional `get()` calls in security rules for authorization purposes, as authorization is already handled by the path. The content itself (`LearningContent`) remains in a global, publicly readable collection, making `get()` to check content details redundant for authorization purposes when accessing user progress.\n\nQAPs (Query as Authorization Predicate) are well-supported. For public data, `list` operations on `/subjects`, `/topics`, and `/learning_content` are inherently secure as they grant read access to all authenticated users. For private data, `list` operations on collections like `/users/{userId}/quiz_attempts` are secure because the query implicitly includes the `userId` from the path, ensuring users can only list their own data. The 'download option doesn't work' is addressed by the `/users/{userId}/content_progress/{progressId}` collection, which tracks `isDownloaded` status per user for each `learningContentId`, allowing atomic and secure updates by the owning user without cross-document checks."
+  }
+}

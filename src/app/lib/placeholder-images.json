@@ -1,0 +1,35 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-student",
+      "description": "A student studying with focus",
+      "imageUrl": "https://picsum.photos/seed/shiksha1/1200/600",
+      "imageHint": "student studying"
+    },
+    {
+      "id": "math-module",
+      "description": "Mathematics textbooks and geometry",
+      "imageUrl": "https://picsum.photos/seed/math/400/300",
+      "imageHint": "mathematics geometry"
+    },
+    {
+      "id": "science-module",
+      "description": "Science laboratory equipment",
+      "imageUrl": "https://picsum.photos/seed/science/400/300",
+      "imageHint": "science laboratory"
+    },
+    {
+      "id": "history-module",
+      "description": "Ancient ruins and history books",
+      "imageUrl": "https://picsum.photos/seed/history/400/300",
+      "imageHint": "history ancient"
+    },
+    {
+      "id": "geography-module",
+      "description": "World map and globe",
+      "imageUrl": "https://picsum.photos/seed/geo/400/300",
+      "imageHint": "world map"
+    }
+  ]
+}

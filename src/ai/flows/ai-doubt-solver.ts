@@ -37,7 +37,6 @@ export async function aiDoubtSolver(input: AiDoubtSolverInput): Promise<AiDoubtS
 
 const solveDoubtPrompt = ai.definePrompt({
   name: 'solveDoubtPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: AiDoubtSolverInputSchema},
   output: {schema: AiDoubtSolverOutputSchema},
   prompt: `You are an AI academic tutor designed to help students understand challenging concepts by providing clear, concise explanations and solutions.

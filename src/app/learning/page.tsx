@@ -2,13 +2,15 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Download, CheckCircle2, MoreVertical, Filter, Loader2, X } from 'lucide-react';
+import { Search, Download, CheckCircle2, MoreVertical, Filter, Loader2, X, BookOpen } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 
@@ -31,6 +33,9 @@ const RESOURCES_DATA = [
 export default function LearningLibraryPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const router = useRouter();
+  const { user, isUserLoading } = useUser();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('All');
   const [downloadingIds, setDownloadingIds] = useState<Set<number>>(new Set());
@@ -39,8 +44,15 @@ export default function LearningLibraryPage() {
 
   useEffect(() => {
     setMounted(true);
+    // Persist some initial downloads for demo
     setDownloadedIds(new Set([0, 2]));
   }, []);
+
+  useEffect(() => {
+    if (mounted && !isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [mounted, isUserLoading, user, router]);
 
   const subjects = useMemo(() => SUBJECTS_DATA.map(s => ({
     ...s,
@@ -60,7 +72,6 @@ export default function LearningLibraryPage() {
     
     setDownloadingIds(prev => new Set(prev).add(id));
     
-    // Simulate network delay
     setTimeout(() => {
       setDownloadingIds(prev => {
         const next = new Set(prev);
@@ -72,28 +83,42 @@ export default function LearningLibraryPage() {
         title: "Download Complete",
         description: `${title} is now available offline.`,
       });
-    }, 2000);
+    }, 1500);
   };
 
-  if (!mounted) return <div className="min-h-screen bg-background"><Navbar /></div>;
+  const toggleSubject = (subjectName: string) => {
+    setSelectedSubject(prev => prev === subjectName ? 'All' : subjectName);
+  };
+
+  if (!mounted || isUserLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
       <main className="flex-1 container max-w-7xl mx-auto px-4 py-8 space-y-12">
-        <header className="space-y-4">
+        <header className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-headline font-bold text-primary tracking-tight">{t('learningContent')}</h1>
-              <p className="text-muted-foreground">Access your offline library and download new modules.</p>
+              <h1 className="text-4xl font-headline font-bold text-primary tracking-tight flex items-center gap-3">
+                <BookOpen className="h-8 w-8" /> {t('learningContent')}
+              </h1>
+              <p className="text-muted-foreground mt-1">Access your offline library and download new curriculum modules.</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Search library..." 
-                  className="pl-10 rounded-full" 
+                  className="pl-10 rounded-full bg-white" 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   suppressHydrationWarning
@@ -107,18 +132,18 @@ export default function LearningLibraryPage() {
                   </button>
                 )}
               </div>
-              <Button variant="outline" size="icon" className="rounded-full">
+              <Button variant="outline" size="icon" className="rounded-full bg-white">
                 <Filter className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
             {['All', 'Mathematics', 'Science', 'History', 'Geography'].map((cat) => (
               <Badge 
                 key={cat} 
                 variant={selectedSubject === cat ? 'default' : 'outline'} 
-                className="px-4 py-1.5 rounded-full cursor-pointer whitespace-nowrap transition-colors"
+                className={`px-4 py-1.5 rounded-full cursor-pointer transition-all ${selectedSubject === cat ? 'scale-105 shadow-sm' : 'bg-white hover:bg-accent'}`}
                 onClick={() => setSelectedSubject(cat)}
               >
                 {cat}
@@ -128,26 +153,33 @@ export default function LearningLibraryPage() {
         </header>
 
         <section className="space-y-6">
-          <h2 className="text-2xl font-headline font-bold">Subjects</h2>
+          <h2 className="text-2xl font-headline font-bold flex items-center gap-2">
+            <Filter className="h-5 w-5 text-primary" /> Subjects
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {subjects.map((subject) => (
               <Card 
                 key={subject.id} 
-                className={`border-none shadow-sm group hover:shadow-md transition-all cursor-pointer overflow-hidden ring-offset-background ${selectedSubject === subject.name ? 'ring-2 ring-primary ring-offset-2' : ''}`}
-                onClick={() => setSelectedSubject(subject.name === selectedSubject ? 'All' : subject.name)}
+                className={`border-none shadow-sm group hover:shadow-md transition-all cursor-pointer overflow-hidden ring-offset-background ${selectedSubject === subject.name ? 'ring-2 ring-primary ring-offset-2 scale-[1.02]' : ''}`}
+                onClick={() => toggleSubject(subject.name)}
               >
                 <div className="relative h-40 w-full bg-muted">
                    <Image 
                      src={subject.image || 'https://picsum.photos/seed/404/400/300'} 
                      alt={subject.name}
                      fill
-                     className="object-cover group-hover:scale-105 transition-transform duration-500"
+                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                    />
-                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                    <div className="absolute bottom-3 left-3 text-white">
-                      <p className="text-xs opacity-80">{subject.modules} Modules</p>
+                      <p className="text-[10px] uppercase font-bold tracking-wider opacity-80">{subject.modules} Modules</p>
                       <h3 className="font-headline font-bold text-xl">{subject.name}</h3>
                    </div>
+                   {selectedSubject === subject.name && (
+                     <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1 shadow-lg animate-in zoom-in">
+                       <CheckCircle2 className="h-4 w-4" />
+                     </div>
+                   )}
                 </div>
               </Card>
             ))}
@@ -158,26 +190,26 @@ export default function LearningLibraryPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-headline font-bold">Resources</h2>
             {(selectedSubject !== 'All' || searchQuery !== '') && (
-              <Button variant="link" onClick={() => { setSelectedSubject('All'); setSearchQuery(''); }} className="text-primary h-auto p-0">
+              <Button variant="link" onClick={() => { setSelectedSubject('All'); setSearchQuery(''); }} className="text-primary h-auto p-0 font-semibold">
                 Clear Filters
               </Button>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-h-[200px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredResources.length > 0 ? (
               filteredResources.map((res) => (
-                <Card key={res.id} className="border-none shadow-sm flex flex-col animate-in fade-in duration-300">
-                  <CardHeader className="p-4 pb-0">
+                <Card key={res.id} className="border-none shadow-sm flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <CardHeader className="p-4 pb-2">
                     <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary" className="bg-accent text-primary text-[10px] uppercase font-bold px-2">
+                      <Badge variant="secondary" className="bg-accent text-primary text-[10px] uppercase font-bold px-2 border-none">
                         {res.type}
                       </Badge>
                       <MoreVertical className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
                     </div>
-                    <CardTitle className="text-base leading-tight font-bold">{res.title}</CardTitle>
+                    <CardTitle className="text-base leading-tight font-bold group-hover:text-primary transition-colors">{res.title}</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-4 flex-1">
-                    <p className="text-sm text-muted-foreground">{res.subject}</p>
+                  <CardContent className="p-4 pt-2 flex-1">
+                    <p className="text-sm text-muted-foreground font-medium">{res.subject}</p>
                   </CardContent>
                   <CardFooter className="p-4 pt-0">
                     {downloadedIds.has(res.id) ? (
@@ -186,7 +218,7 @@ export default function LearningLibraryPage() {
                       </Button>
                     ) : (
                       <Button 
-                        className="w-full gap-2" 
+                        className="w-full gap-2 shadow-sm" 
                         onClick={() => handleDownload(res.id, res.title)}
                         disabled={downloadingIds.has(res.id)}
                       >
@@ -207,11 +239,11 @@ export default function LearningLibraryPage() {
                 </Card>
               ))
             ) : (
-              <div className="col-span-full py-24 text-center space-y-4">
+              <div className="col-span-full py-24 text-center space-y-4 bg-white/50 rounded-3xl border-2 border-dashed">
                 <Search className="h-12 w-12 text-muted-foreground mx-auto opacity-20" />
                 <div className="space-y-1">
                   <p className="text-lg font-medium text-muted-foreground">No resources found</p>
-                  <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+                  <p className="text-sm text-muted-foreground">Try adjusting your search query or subject filters.</p>
                 </div>
               </div>
             )}

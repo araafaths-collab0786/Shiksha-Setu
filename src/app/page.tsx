@@ -62,15 +62,15 @@ export default function HomePage() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-headline font-bold tracking-tight text-primary">
-              {t('welcome')}, {user.displayName || 'Student'}!
+              {t('welcome')}, {user.displayName || user.email?.split('@')[0] || 'Student'}!
             </h1>
             <p className="text-muted-foreground mt-1">Keep track of your progress and start where you left off.</p>
           </div>
           <div className="flex items-center gap-3">
-             <Button variant="outline" className="flex items-center gap-2" onClick={handleDownloadAll}>
+             <Button variant="outline" className="flex items-center gap-2 bg-white" onClick={handleDownloadAll}>
                 <Download className="h-4 w-4" /> Download All
              </Button>
-             <Button asChild className="flex items-center gap-2">
+             <Button asChild className="flex items-center gap-2 shadow-md">
                <Link href="/learning">
                  Resume Learning <ArrowRight className="h-4 w-4" />
                </Link>
@@ -89,12 +89,12 @@ export default function HomePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {quickLinks.map((link, idx) => (
                   <Link key={idx} href={link.href} className="block group">
-                    <Card className="h-full border-none shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer">
+                    <Card className="h-full border-none shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer bg-white">
                       <CardContent className="pt-6">
                         <div className={`${link.color} text-white w-10 h-10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                           <link.icon className="h-6 w-6" />
                         </div>
-                        <h3 className="font-bold text-lg mb-1">{link.title}</h3>
+                        <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors">{link.title}</h3>
                         <p className="text-sm text-muted-foreground leading-snug">{link.description}</p>
                       </CardContent>
                     </Card>
@@ -109,25 +109,27 @@ export default function HomePage() {
               </h2>
               <div className="space-y-3">
                 {[
-                  { title: 'Basic Algebra', subject: 'Mathematics', initial: 'M' },
-                  { title: 'Ecosystems', subject: 'Science', initial: 'S' }
+                  { title: 'Basic Algebra', subject: 'Mathematics', initial: 'M', href: '/learning' },
+                  { title: 'Ecosystems', subject: 'Science', initial: 'S', href: '/learning' }
                 ].map((lesson, i) => (
-                  <Card key={i} className="border-none shadow-sm group cursor-pointer hover:bg-accent/30 transition-colors">
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-bold text-lg">
-                          {lesson.initial}
+                  <Link key={i} href={lesson.href}>
+                    <Card className="border-none shadow-sm group cursor-pointer hover:bg-accent/30 transition-colors bg-white mt-3">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-bold text-lg group-hover:bg-primary group-hover:text-white transition-all">
+                            {lesson.initial}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold group-hover:text-primary transition-colors">{lesson.title}</h4>
+                            <p className="text-xs text-muted-foreground">{lesson.subject} • 45m left</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-semibold">{lesson.title}</h4>
-                          <p className="text-xs text-muted-foreground">{lesson.subject} • 45m left</p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        Continue
-                      </Button>
-                    </CardContent>
-                  </Card>
+                        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          Continue
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -136,7 +138,7 @@ export default function HomePage() {
           <aside className="space-y-8">
             <PersonalizedPath />
             
-            <Card className="border-none shadow-sm">
+            <Card className="border-none shadow-sm bg-white">
               <CardHeader>
                 <CardTitle className="text-lg font-headline">Offline Storage</CardTitle>
               </CardHeader>

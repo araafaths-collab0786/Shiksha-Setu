@@ -12,7 +12,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Languages, Wifi, WifiOff, LayoutDashboard, MessageSquare, BookOpen, GraduationCap, Settings, LogOut, User } from 'lucide-react';
+import { Languages, Wifi, WifiOff, LayoutDashboard, MessageSquare, BookOpen, GraduationCap, Settings, LogOut, User as UserIcon } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 
 export function Navbar() {
@@ -88,7 +88,7 @@ export function Navbar() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" suppressHydrationWarning>
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full bg-white">
                 <Languages className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -108,8 +108,8 @@ export function Navbar() {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" suppressHydrationWarning>
-                  <User className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                  <UserIcon className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -117,7 +117,10 @@ export function Navbar() {
                   {user.email || 'Guest'}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/')}>
-                  <User className="mr-2 h-4 w-4" /> Profile
+                  <UserIcon className="mr-2 h-4 w-4" /> Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/')}>
+                  <Settings className="mr-2 h-4 w-4" /> Settings
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                   <LogOut className="mr-2 h-4 w-4" /> Sign Out

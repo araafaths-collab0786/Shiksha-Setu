@@ -18,7 +18,7 @@ export default function QuizzesPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background" suppressHydrationWarning>
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
       <main className="flex-1 container max-w-7xl mx-auto px-4 py-8 space-y-12">
@@ -29,7 +29,7 @@ export default function QuizzesPage() {
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {activeQuizzes.map((quiz, idx) => (
-            <Card key={idx} className="border-none shadow-sm hover:shadow-md transition-all group overflow-hidden">
+            <Card key={idx} className="border-none shadow-sm hover:shadow-md transition-all group overflow-hidden bg-white">
               <CardHeader>
                 <div className="flex justify-between items-start mb-2">
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
@@ -46,7 +46,7 @@ export default function QuizzesPage() {
                 </CardDescription>
               </CardHeader>
               <CardFooter className="px-6 pb-6 pt-0">
-                <Button className="w-full group-hover:bg-primary transition-colors" suppressHydrationWarning>
+                <Button className="w-full group-hover:bg-primary transition-colors">
                   {t('startQuiz')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardFooter>
@@ -63,7 +63,7 @@ export default function QuizzesPage() {
               <h2 className="text-2xl font-headline font-bold">Practice makes perfect</h2>
               <p className="text-muted-foreground">Complete quizzes to unlock personalized learning recommendations from your AI tutor.</p>
             </div>
-            <Button variant="outline" className="rounded-full" suppressHydrationWarning>View History</Button>
+            <Button variant="outline" className="rounded-full bg-white">View History</Button>
           </div>
         </Card>
       </main>

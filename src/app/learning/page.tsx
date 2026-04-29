@@ -44,7 +44,6 @@ export default function LearningLibraryPage() {
 
   useEffect(() => {
     setMounted(true);
-    // Persist some initial downloads for demo
     setDownloadedIds(new Set([0, 2]));
   }, []);
 
@@ -70,7 +69,11 @@ export default function LearningLibraryPage() {
   const handleDownload = (id: number, title: string) => {
     if (downloadedIds.has(id) || downloadingIds.has(id)) return;
     
-    setDownloadingIds(prev => new Set(prev).add(id));
+    setDownloadingIds(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
     
     setTimeout(() => {
       setDownloadingIds(prev => {
@@ -78,7 +81,11 @@ export default function LearningLibraryPage() {
         next.delete(id);
         return next;
       });
-      setDownloadedIds(prev => new Set(prev).add(id));
+      setDownloadedIds(prev => {
+        const next = new Set(prev);
+        next.add(id);
+        return next;
+      });
       toast({
         title: "Download Complete",
         description: `${title} is now available offline.`,
@@ -101,7 +108,7 @@ export default function LearningLibraryPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background" suppressHydrationWarning>
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
       <main className="flex-1 container max-w-7xl mx-auto px-4 py-8 space-y-12">
@@ -121,7 +128,6 @@ export default function LearningLibraryPage() {
                   className="pl-10 rounded-full bg-white" 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  suppressHydrationWarning
                 />
                 {searchQuery && (
                   <button 
@@ -132,7 +138,7 @@ export default function LearningLibraryPage() {
                   </button>
                 )}
               </div>
-              <Button variant="outline" size="icon" className="rounded-full bg-white" suppressHydrationWarning>
+              <Button variant="outline" size="icon" className="rounded-full bg-white">
                 <Filter className="h-4 w-4" />
               </Button>
             </div>
@@ -160,7 +166,7 @@ export default function LearningLibraryPage() {
             {subjects.map((subject) => (
               <Card 
                 key={subject.id} 
-                className={`border-none shadow-sm group hover:shadow-md transition-all cursor-pointer overflow-hidden ring-offset-background ${selectedSubject === subject.name ? 'ring-2 ring-primary ring-offset-2 scale-[1.02]' : ''}`}
+                className={`border-none shadow-sm group hover:shadow-md transition-all cursor-pointer overflow-hidden ring-offset-background bg-white ${selectedSubject === subject.name ? 'ring-2 ring-primary ring-offset-2 scale-[1.02]' : ''}`}
                 onClick={() => toggleSubject(subject.name)}
               >
                 <div className="relative h-40 w-full bg-muted">
@@ -190,7 +196,7 @@ export default function LearningLibraryPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-headline font-bold">Resources</h2>
             {(selectedSubject !== 'All' || searchQuery !== '') && (
-              <Button variant="link" onClick={() => { setSelectedSubject('All'); setSearchQuery(''); }} className="text-primary h-auto p-0 font-semibold" suppressHydrationWarning>
+              <Button variant="link" onClick={() => { setSelectedSubject('All'); setSearchQuery(''); }} className="text-primary h-auto p-0 font-semibold">
                 Clear Filters
               </Button>
             )}
@@ -198,7 +204,7 @@ export default function LearningLibraryPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredResources.length > 0 ? (
               filteredResources.map((res) => (
-                <Card key={res.id} className="border-none shadow-sm flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <Card key={res.id} className="border-none shadow-sm flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300 bg-white">
                   <CardHeader className="p-4 pb-2">
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant="secondary" className="bg-accent text-primary text-[10px] uppercase font-bold px-2 border-none">
@@ -213,7 +219,7 @@ export default function LearningLibraryPage() {
                   </CardContent>
                   <CardFooter className="p-4 pt-0">
                     {downloadedIds.has(res.id) ? (
-                      <Button variant="outline" className="w-full gap-2 border-green-200 text-green-700 bg-green-50/50 hover:bg-green-50" disabled suppressHydrationWarning>
+                      <Button variant="outline" className="w-full gap-2 border-green-200 text-green-700 bg-green-50/50 hover:bg-green-50" disabled>
                         <CheckCircle2 className="h-4 w-4" /> {t('downloaded')}
                       </Button>
                     ) : (
@@ -221,7 +227,6 @@ export default function LearningLibraryPage() {
                         className="w-full gap-2 shadow-sm" 
                         onClick={() => handleDownload(res.id, res.title)}
                         disabled={downloadingIds.has(res.id)}
-                        suppressHydrationWarning
                       >
                         {downloadingIds.has(res.id) ? (
                           <>

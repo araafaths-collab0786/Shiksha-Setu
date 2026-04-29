@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 import { PersonalizedPath } from '@/components/dashboard/PersonalizedPath';
@@ -16,6 +15,11 @@ import { useToast } from '@/hooks/use-toast';
 export default function HomePage() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const quickLinks = useMemo(() => [
     { title: t('doubtSolver'), icon: BrainCircuit, href: '/doubt-solver', description: 'Ask questions & get solutions instantly', color: 'bg-primary' },
@@ -29,6 +33,8 @@ export default function HomePage() {
       description: "Downloading all pending curriculum updates for offline use.",
     });
   };
+
+  if (!mounted) return <div className="min-h-screen bg-background"><Navbar /></div>;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -46,11 +52,11 @@ export default function HomePage() {
              <Button variant="outline" className="flex items-center gap-2" onClick={handleDownloadAll}>
                 <Download className="h-4 w-4" /> Download All
              </Button>
-             <Link href="/learning" passHref legacyBehavior>
-               <Button className="flex items-center gap-2">
+             <Button asChild className="flex items-center gap-2">
+               <Link href="/learning">
                  Resume Learning <ArrowRight className="h-4 w-4" />
-               </Button>
-             </Link>
+               </Link>
+             </Button>
           </div>
         </header>
 
@@ -84,16 +90,19 @@ export default function HomePage() {
                 Recent Lessons
               </h2>
               <div className="space-y-3">
-                {[1, 2].map((i) => (
+                {[
+                  { title: 'Basic Algebra', subject: 'Mathematics', initial: 'M' },
+                  { title: 'Ecosystems', subject: 'Science', initial: 'S' }
+                ].map((lesson, i) => (
                   <Card key={i} className="border-none shadow-sm group cursor-pointer hover:bg-accent/30 transition-colors">
                     <CardContent className="p-4 flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-bold text-lg">
-                          {i === 1 ? 'M' : 'S'}
+                          {lesson.initial}
                         </div>
                         <div>
-                          <h4 className="font-semibold">{i === 1 ? 'Basic Algebra' : 'Ecosystems'}</h4>
-                          <p className="text-xs text-muted-foreground">Mathematics • 45m left</p>
+                          <h4 className="font-semibold">{lesson.title}</h4>
+                          <p className="text-xs text-muted-foreground">{lesson.subject} • 45m left</p>
                         </div>
                       </div>
                       <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">

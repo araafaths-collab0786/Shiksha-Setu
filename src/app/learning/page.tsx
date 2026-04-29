@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { Navbar } from '@/components/layout/Navbar';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
@@ -13,44 +12,55 @@ import { Search, Download, CheckCircle2, MoreVertical, Filter, Loader2 } from 'l
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 
+const SUBJECTS_DATA = [
+  { name: 'Mathematics', modules: 12, icon: 'math-module' },
+  { name: 'Science', modules: 8, icon: 'science-module' },
+  { name: 'History', modules: 15, icon: 'history-module' },
+  { name: 'Geography', modules: 10, icon: 'geography-module' },
+];
+
+const RESOURCES_DATA = [
+  { id: 0, title: 'Algebra Fundamentals', subject: 'Mathematics', type: 'Video', size: '124 MB' },
+  { id: 1, title: 'Chemical Bonding 101', subject: 'Science', type: 'Module', size: '45 MB' },
+  { id: 2, title: 'The Mughal Empire', subject: 'History', type: 'PDF', size: '12 MB' },
+  { id: 3, title: 'Map Projections', subject: 'Geography', type: 'Video', size: '89 MB' },
+  { id: 4, title: 'Quadratic Equations', subject: 'Mathematics', type: 'PDF', size: '5 MB' },
+  { id: 5, title: 'Cell Biology', subject: 'Science', type: 'Video', size: '150 MB' },
+];
+
 export default function LearningLibraryPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('All');
   const [downloadingIds, setDownloadingIds] = useState<Set<number>>(new Set());
-  const [downloadedIds, setDownloadedIds] = useState<Set<number>>(new Set([0, 2])); // Mock pre-downloaded
+  const [downloadedIds, setDownloadedIds] = useState<Set<number>>(new Set());
+  const [mounted, setMounted] = useState(false);
 
-  const subjects = useMemo(() => [
-    { name: 'Mathematics', icon: 'M', modules: 12, image: PlaceHolderImages.find(i => i.id === 'math-module')?.imageUrl },
-    { name: 'Science', icon: 'S', modules: 8, image: PlaceHolderImages.find(i => i.id === 'science-module')?.imageUrl },
-    { name: 'History', icon: 'H', modules: 15, image: PlaceHolderImages.find(i => i.id === 'history-module')?.imageUrl },
-    { name: 'Geography', icon: 'G', modules: 10, image: PlaceHolderImages.find(i => i.id === 'geography-module')?.imageUrl },
-  ], []);
+  useEffect(() => {
+    setMounted(true);
+    // Initial mock downloaded state
+    setDownloadedIds(new Set([0, 2]));
+  }, []);
 
-  const resources = useMemo(() => [
-    { id: 0, title: 'Algebra Fundamentals', subject: 'Mathematics', type: 'Video', size: '124 MB' },
-    { id: 1, title: 'Chemical Bonding 101', subject: 'Science', type: 'Module', size: '45 MB' },
-    { id: 2, title: 'The Mughal Empire', subject: 'History', type: 'PDF', size: '12 MB' },
-    { id: 3, title: 'Map Projections', subject: 'Geography', type: 'Video', size: '89 MB' },
-    { id: 4, title: 'Quadratic Equations', subject: 'Mathematics', type: 'PDF', size: '5 MB' },
-    { id: 5, title: 'Cell Biology', subject: 'Science', type: 'Video', size: '150 MB' },
-  ], []);
+  const subjects = useMemo(() => SUBJECTS_DATA.map(s => ({
+    ...s,
+    image: PlaceHolderImages.find(i => i.id === s.icon)?.imageUrl
+  })), []);
 
   const filteredResources = useMemo(() => {
-    return resources.filter(res => {
+    return RESOURCES_DATA.filter(res => {
       const matchesSearch = res.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesSubject = selectedSubject === 'All' || res.subject === selectedSubject;
       return matchesSearch && matchesSubject;
     });
-  }, [searchQuery, selectedSubject, resources]);
+  }, [searchQuery, selectedSubject]);
 
   const handleDownload = (id: number, title: string) => {
     if (downloadedIds.has(id)) return;
     
     setDownloadingIds(prev => new Set(prev).add(id));
     
-    // Simulate download
     setTimeout(() => {
       setDownloadingIds(prev => {
         const next = new Set(prev);
@@ -64,6 +74,8 @@ export default function LearningLibraryPage() {
       });
     }, 2000);
   };
+
+  if (!mounted) return <div className="min-h-screen bg-background"><Navbar /></div>;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -136,8 +148,8 @@ export default function LearningLibraryPage() {
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-headline font-bold">Resources</h2>
-            {selectedSubject !== 'All' && (
-              <Button variant="link" onClick={() => setSelectedSubject('All')} className="text-primary">Clear Filter</Button>
+            {(selectedSubject !== 'All' || searchQuery !== '') && (
+              <Button variant="link" onClick={() => { setSelectedSubject('All'); setSearchQuery(''); }} className="text-primary">Clear Filters</Button>
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[200px]">
@@ -186,21 +198,6 @@ export default function LearningLibraryPage() {
             )}
           </div>
         </section>
-
-        <Card className="border-none shadow-sm bg-primary/5 p-8 text-center space-y-4">
-          <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-            <Download className="h-8 w-8 text-primary" />
-          </div>
-          <h2 className="text-2xl font-headline font-bold text-primary">Need more content?</h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">
-            Browse through hundreds of modules curated for your curriculum. Once downloaded, you can study them anytime without an internet connection.
-          </p>
-          <div className="pt-4">
-            <Button className="rounded-full px-8" onClick={() => toast({ title: "Coming Soon", description: "Marketplace is being prepared." })}>
-              Browse Marketplace
-            </Button>
-          </div>
-        </Card>
       </main>
     </div>
   );

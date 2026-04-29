@@ -61,7 +61,19 @@ const personalizedLearningPathFlow = ai.defineFlow(
     outputSchema: PersonalizedLearningPathOutputSchema,
   },
   async (input) => {
-    const { output } = await personalizedLearningPathPrompt(input);
-    return output!;
+    let attempts = 0;
+    const maxAttempts = 3;
+    while (attempts < maxAttempts) {
+      try {
+        const { output } = await personalizedLearningPathPrompt(input);
+        if (!output) throw new Error('No output from AI');
+        return output;
+      } catch (e: any) {
+        attempts++;
+        if (attempts >= maxAttempts) throw e;
+        await new Promise((resolve) => setTimeout(resolve, attempts * 1500));
+      }
+    }
+    throw new Error('Failed to generate learning path after retries');
   }
 );

@@ -1,6 +1,7 @@
+
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 import { PersonalizedPath } from '@/components/dashboard/PersonalizedPath';
@@ -10,15 +11,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { BookOpen, HelpCircle, GraduationCap, ArrowRight, Download, BrainCircuit } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export default function HomePage() {
   const { t } = useLanguage();
+  const { toast } = useToast();
 
-  const quickLinks = [
+  const quickLinks = useMemo(() => [
     { title: t('doubtSolver'), icon: BrainCircuit, href: '/doubt-solver', description: 'Ask questions & get solutions instantly', color: 'bg-primary' },
     { title: t('learningContent'), icon: BookOpen, href: '/learning', description: 'Access textbooks and videos offline', color: 'bg-secondary' },
     { title: t('quizzes'), icon: HelpCircle, href: '/quizzes', description: 'Test your knowledge with practice sets', color: 'bg-blue-400' },
-  ];
+  ], [t]);
+
+  const handleDownloadAll = () => {
+    toast({
+      title: "Sync Started",
+      description: "Downloading all pending curriculum updates for offline use.",
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -33,10 +43,10 @@ export default function HomePage() {
             <p className="text-muted-foreground mt-1">Keep track of your progress and start where you left off.</p>
           </div>
           <div className="flex items-center gap-3">
-             <Button variant="outline" className="flex items-center gap-2">
+             <Button variant="outline" className="flex items-center gap-2" onClick={handleDownloadAll}>
                 <Download className="h-4 w-4" /> Download All
              </Button>
-             <Link href="/learning">
+             <Link href="/learning" passHref legacyBehavior>
                <Button className="flex items-center gap-2">
                  Resume Learning <ArrowRight className="h-4 w-4" />
                </Button>
@@ -54,8 +64,8 @@ export default function HomePage() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {quickLinks.map((link, idx) => (
-                  <Link key={idx} href={link.href}>
-                    <Card className="h-full border-none shadow-sm hover:shadow-md transition-all cursor-pointer group">
+                  <Link key={idx} href={link.href} className="block group">
+                    <Card className="h-full border-none shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer">
                       <CardContent className="pt-6">
                         <div className={`${link.color} text-white w-10 h-10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                           <link.icon className="h-6 w-6" />

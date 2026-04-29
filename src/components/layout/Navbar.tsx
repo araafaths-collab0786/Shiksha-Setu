@@ -1,9 +1,9 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
+import { useAuth, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -11,26 +11,31 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Languages, Wifi, WifiOff, LayoutDashboard, MessageSquare, BookOpen, GraduationCap, Settings } from 'lucide-react';
+import { Languages, Wifi, WifiOff, LayoutDashboard, MessageSquare, BookOpen, GraduationCap, Settings, LogOut, User } from 'lucide-react';
+import { signOut } from 'firebase/auth';
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
+  const auth = useAuth();
+  const { user } = useUser();
   const [isOnline, setIsOnline] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    setIsOnline(navigator.onLine);
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
+    if (typeof window !== 'undefined') {
+      setIsOnline(navigator.onLine);
+      const handleOnline = () => setIsOnline(true);
+      const handleOffline = () => setIsOnline(false);
+      
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
   }, []);
 
   const languages = [
@@ -41,6 +46,10 @@ export function Navbar() {
     { code: 'ta', name: 'தமிழ்' },
     { code: 'mr', name: 'मराठी' },
   ];
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -93,9 +102,26 @@ export function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-            <Settings className="h-4 w-4" />
-          </Button>
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                  <User className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="font-medium text-xs text-muted-foreground px-3 py-2">
+                  {user.email || 'Guest'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/settings')}>
+                  <Settings className="mr-2 h-4 w-4" /> Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </nav>

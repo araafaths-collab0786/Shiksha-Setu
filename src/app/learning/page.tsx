@@ -8,15 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Download, CheckCircle2, MoreVertical, Filter, Loader2 } from 'lucide-react';
+import { Search, Download, CheckCircle2, MoreVertical, Filter, Loader2, X } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 
 const SUBJECTS_DATA = [
-  { name: 'Mathematics', modules: 12, icon: 'math-module' },
-  { name: 'Science', modules: 8, icon: 'science-module' },
-  { name: 'History', modules: 15, icon: 'history-module' },
-  { name: 'Geography', modules: 10, icon: 'geography-module' },
+  { id: 'math-module', name: 'Mathematics', modules: 12 },
+  { id: 'science-module', name: 'Science', modules: 8 },
+  { id: 'history-module', name: 'History', modules: 15 },
+  { id: 'geography-module', name: 'Geography', modules: 10 },
 ];
 
 const RESOURCES_DATA = [
@@ -39,13 +39,12 @@ export default function LearningLibraryPage() {
 
   useEffect(() => {
     setMounted(true);
-    // Initial mock downloaded state
     setDownloadedIds(new Set([0, 2]));
   }, []);
 
   const subjects = useMemo(() => SUBJECTS_DATA.map(s => ({
     ...s,
-    image: PlaceHolderImages.find(i => i.id === s.icon)?.imageUrl
+    image: PlaceHolderImages.find(i => i.id === s.id)?.imageUrl
   })), []);
 
   const filteredResources = useMemo(() => {
@@ -57,10 +56,11 @@ export default function LearningLibraryPage() {
   }, [searchQuery, selectedSubject]);
 
   const handleDownload = (id: number, title: string) => {
-    if (downloadedIds.has(id)) return;
+    if (downloadedIds.has(id) || downloadingIds.has(id)) return;
     
     setDownloadingIds(prev => new Set(prev).add(id));
     
+    // Simulate network delay
     setTimeout(() => {
       setDownloadingIds(prev => {
         const next = new Set(prev);
@@ -85,7 +85,7 @@ export default function LearningLibraryPage() {
         <header className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-headline font-bold text-primary">{t('learningContent')}</h1>
+              <h1 className="text-4xl font-headline font-bold text-primary tracking-tight">{t('learningContent')}</h1>
               <p className="text-muted-foreground">Access your offline library and download new modules.</p>
             </div>
             <div className="flex items-center gap-2">
@@ -96,7 +96,16 @@ export default function LearningLibraryPage() {
                   className="pl-10 rounded-full" 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  suppressHydrationWarning
                 />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
               <Button variant="outline" size="icon" className="rounded-full">
                 <Filter className="h-4 w-4" />
@@ -121,11 +130,11 @@ export default function LearningLibraryPage() {
         <section className="space-y-6">
           <h2 className="text-2xl font-headline font-bold">Subjects</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {subjects.map((subject, idx) => (
+            {subjects.map((subject) => (
               <Card 
-                key={idx} 
-                className={`border-none shadow-sm group hover:shadow-md transition-all cursor-pointer overflow-hidden ${selectedSubject === subject.name ? 'ring-2 ring-primary' : ''}`}
-                onClick={() => setSelectedSubject(subject.name)}
+                key={subject.id} 
+                className={`border-none shadow-sm group hover:shadow-md transition-all cursor-pointer overflow-hidden ring-offset-background ${selectedSubject === subject.name ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                onClick={() => setSelectedSubject(subject.name === selectedSubject ? 'All' : subject.name)}
               >
                 <div className="relative h-40 w-full bg-muted">
                    <Image 
@@ -134,7 +143,7 @@ export default function LearningLibraryPage() {
                      fill
                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                    />
-                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                    <div className="absolute bottom-3 left-3 text-white">
                       <p className="text-xs opacity-80">{subject.modules} Modules</p>
                       <h3 className="font-headline font-bold text-xl">{subject.name}</h3>
@@ -149,51 +158,61 @@ export default function LearningLibraryPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-headline font-bold">Resources</h2>
             {(selectedSubject !== 'All' || searchQuery !== '') && (
-              <Button variant="link" onClick={() => { setSelectedSubject('All'); setSearchQuery(''); }} className="text-primary">Clear Filters</Button>
+              <Button variant="link" onClick={() => { setSelectedSubject('All'); setSearchQuery(''); }} className="text-primary h-auto p-0">
+                Clear Filters
+              </Button>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[200px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-h-[200px]">
             {filteredResources.length > 0 ? (
               filteredResources.map((res) => (
                 <Card key={res.id} className="border-none shadow-sm flex flex-col animate-in fade-in duration-300">
                   <CardHeader className="p-4 pb-0">
                     <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary" className="bg-accent text-secondary text-[10px] uppercase font-bold px-2">
+                      <Badge variant="secondary" className="bg-accent text-primary text-[10px] uppercase font-bold px-2">
                         {res.type}
                       </Badge>
-                      <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                      <MoreVertical className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
                     </div>
                     <CardTitle className="text-base leading-tight font-bold">{res.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 flex-1">
-                    <p className="text-sm text-muted-foreground mb-4">{res.subject}</p>
+                    <p className="text-sm text-muted-foreground">{res.subject}</p>
                   </CardContent>
                   <CardFooter className="p-4 pt-0">
                     {downloadedIds.has(res.id) ? (
-                      <Button variant="outline" className="w-full gap-2 border-green-100 text-green-700 bg-green-50/50 hover:bg-green-50" disabled>
+                      <Button variant="outline" className="w-full gap-2 border-green-200 text-green-700 bg-green-50/50 hover:bg-green-50" disabled>
                         <CheckCircle2 className="h-4 w-4" /> {t('downloaded')}
                       </Button>
                     ) : (
                       <Button 
-                        className="w-full gap-2 bg-primary" 
+                        className="w-full gap-2" 
                         onClick={() => handleDownload(res.id, res.title)}
                         disabled={downloadingIds.has(res.id)}
                       >
                         {downloadingIds.has(res.id) ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Downloading...
+                          </>
                         ) : (
-                          <Download className="h-4 w-4" />
+                          <>
+                            <Download className="h-4 w-4" />
+                            Download ({res.size})
+                          </>
                         )}
-                        {downloadingIds.has(res.id) ? 'Downloading...' : `Download (${res.size})`}
                       </Button>
                     )}
                   </CardFooter>
                 </Card>
               ))
             ) : (
-              <div className="col-span-full py-12 text-center space-y-2">
-                <Search className="h-10 w-10 text-muted-foreground mx-auto opacity-20" />
-                <p className="text-muted-foreground">No resources found matching your search.</p>
+              <div className="col-span-full py-24 text-center space-y-4">
+                <Search className="h-12 w-12 text-muted-foreground mx-auto opacity-20" />
+                <div className="space-y-1">
+                  <p className="text-lg font-medium text-muted-foreground">No resources found</p>
+                  <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+                </div>
               </div>
             )}
           </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/firebase';
 import { Navbar } from '@/components/layout/Navbar';
 import { ProgressOverview } from '@/components/dashboard/ProgressOverview';
 import { PersonalizedPath } from '@/components/dashboard/PersonalizedPath';
@@ -8,18 +10,26 @@ import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { BookOpen, HelpCircle, GraduationCap, ArrowRight, Download, BrainCircuit } from 'lucide-react';
+import { BookOpen, HelpCircle, GraduationCap, ArrowRight, Download, BrainCircuit, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
 export default function HomePage() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const router = useRouter();
+  const { user, isUserLoading } = useUser();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (mounted && !isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [mounted, isUserLoading, user, router]);
 
   const quickLinks = useMemo(() => [
     { title: t('doubtSolver'), icon: BrainCircuit, href: '/doubt-solver', description: 'Ask questions & get solutions instantly', color: 'bg-primary' },
@@ -34,7 +44,15 @@ export default function HomePage() {
     });
   };
 
-  if (!mounted) return <div className="min-h-screen bg-background"><Navbar /></div>;
+  if (!mounted || isUserLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -44,7 +62,7 @@ export default function HomePage() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-headline font-bold tracking-tight text-primary">
-              {t('welcome')}, Student!
+              {t('welcome')}, {user.displayName || 'Student'}!
             </h1>
             <p className="text-muted-foreground mt-1">Keep track of your progress and start where you left off.</p>
           </div>

@@ -63,6 +63,7 @@ const personalizedLearningPathFlow = ai.defineFlow(
   async (input) => {
     let attempts = 0;
     const maxAttempts = 3;
+    
     while (attempts < maxAttempts) {
       try {
         const { output } = await personalizedLearningPathPrompt(input);
@@ -71,8 +72,12 @@ const personalizedLearningPathFlow = ai.defineFlow(
       } catch (e: any) {
         attempts++;
         if (attempts >= maxAttempts) throw e;
-        // Wait longer between retries
-        await new Promise((resolve) => setTimeout(resolve, attempts * 2000));
+        
+        // Handle rate limiting (429) specifically with exponential backoff
+        const isRateLimit = e.message?.includes('429') || e.message?.includes('Too Many Requests');
+        const delay = isRateLimit ? attempts * 10000 : attempts * 2000;
+        
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
     throw new Error('Failed to generate learning path after multiple attempts');

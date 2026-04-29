@@ -101,7 +101,7 @@ export default function LearningLibraryPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background" suppressHydrationWarning>
       <Navbar />
       
       <main className="flex-1 container max-w-7xl mx-auto px-4 py-8 space-y-12">
@@ -132,7 +132,7 @@ export default function LearningLibraryPage() {
                   </button>
                 )}
               </div>
-              <Button variant="outline" size="icon" className="rounded-full bg-white">
+              <Button variant="outline" size="icon" className="rounded-full bg-white" suppressHydrationWarning>
                 <Filter className="h-4 w-4" />
               </Button>
             </div>
@@ -190,7 +190,7 @@ export default function LearningLibraryPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-headline font-bold">Resources</h2>
             {(selectedSubject !== 'All' || searchQuery !== '') && (
-              <Button variant="link" onClick={() => { setSelectedSubject('All'); setSearchQuery(''); }} className="text-primary h-auto p-0 font-semibold">
+              <Button variant="link" onClick={() => { setSelectedSubject('All'); setSearchQuery(''); }} className="text-primary h-auto p-0 font-semibold" suppressHydrationWarning>
                 Clear Filters
               </Button>
             )}
@@ -213,7 +213,7 @@ export default function LearningLibraryPage() {
                   </CardContent>
                   <CardFooter className="p-4 pt-0">
                     {downloadedIds.has(res.id) ? (
-                      <Button variant="outline" className="w-full gap-2 border-green-200 text-green-700 bg-green-50/50 hover:bg-green-50" disabled>
+                      <Button variant="outline" className="w-full gap-2 border-green-200 text-green-700 bg-green-50/50 hover:bg-green-50" disabled suppressHydrationWarning>
                         <CheckCircle2 className="h-4 w-4" /> {t('downloaded')}
                       </Button>
                     ) : (
@@ -221,6 +221,7 @@ export default function LearningLibraryPage() {
                         className="w-full gap-2 shadow-sm" 
                         onClick={() => handleDownload(res.id, res.title)}
                         disabled={downloadingIds.has(res.id)}
+                        suppressHydrationWarning
                       >
                         {downloadingIds.has(res.id) ? (
                           <>

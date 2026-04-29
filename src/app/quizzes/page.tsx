@@ -3,7 +3,7 @@
 import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { HelpCircle, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
@@ -18,18 +18,18 @@ export default function QuizzesPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background" suppressHydrationWarning>
       <Navbar />
       
       <main className="flex-1 container max-w-7xl mx-auto px-4 py-8 space-y-12">
         <header className="space-y-4">
-          <h1 className="text-4xl font-headline font-bold text-primary">{t('quizzes')}</h1>
+          <h1 className="text-4xl font-headline font-bold text-primary tracking-tight">{t('quizzes')}</h1>
           <p className="text-muted-foreground text-lg">Challenge yourself and track your learning progress.</p>
         </header>
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {activeQuizzes.map((quiz, idx) => (
-            <Card key={idx} className="border-none shadow-sm hover:shadow-md transition-all group">
+            <Card key={idx} className="border-none shadow-sm hover:shadow-md transition-all group overflow-hidden">
               <CardHeader>
                 <div className="flex justify-between items-start mb-2">
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
@@ -46,7 +46,7 @@ export default function QuizzesPage() {
                 </CardDescription>
               </CardHeader>
               <CardFooter className="px-6 pb-6 pt-0">
-                <Button className="w-full group-hover:bg-primary transition-colors">
+                <Button className="w-full group-hover:bg-primary transition-colors" suppressHydrationWarning>
                   {t('startQuiz')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardFooter>
@@ -63,7 +63,7 @@ export default function QuizzesPage() {
               <h2 className="text-2xl font-headline font-bold">Practice makes perfect</h2>
               <p className="text-muted-foreground">Complete quizzes to unlock personalized learning recommendations from your AI tutor.</p>
             </div>
-            <Button variant="outline" className="rounded-full">View History</Button>
+            <Button variant="outline" className="rounded-full" suppressHydrationWarning>View History</Button>
           </div>
         </Card>
       </main>

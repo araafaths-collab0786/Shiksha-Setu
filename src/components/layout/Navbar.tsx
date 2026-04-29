@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/lib/contexts/LanguageContext';
 import { useAuth, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { signOut } from 'firebase/auth';
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
+  const router = useRouter();
   const auth = useAuth();
   const { user } = useUser();
   const [isOnline, setIsOnline] = useState(true);
@@ -49,10 +51,11 @@ export function Navbar() {
 
   const handleSignOut = async () => {
     await signOut(auth);
+    router.push('/login');
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" suppressHydrationWarning>
       <div className="container flex h-16 items-center justify-between px-4 max-w-7xl mx-auto">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2">
@@ -85,7 +88,7 @@ export function Navbar() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full">
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" suppressHydrationWarning>
                 <Languages className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -105,7 +108,7 @@ export function Navbar() {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" suppressHydrationWarning>
                   <User className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -113,8 +116,8 @@ export function Navbar() {
                 <DropdownMenuItem className="font-medium text-xs text-muted-foreground px-3 py-2">
                   {user.email || 'Guest'}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings')}>
-                  <Settings className="mr-2 h-4 w-4" /> Settings
+                <DropdownMenuItem onClick={() => router.push('/')}>
+                  <User className="mr-2 h-4 w-4" /> Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                   <LogOut className="mr-2 h-4 w-4" /> Sign Out

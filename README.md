@@ -29,21 +29,6 @@ When online → the app fetches AI-powered explanations automatically
 
 It’s designed to work with real-world conditions, not ideal ones.
 
-🧩 What You Can Do with Shiksha Setu
-📚 Learn Anytime (Even Offline)
-Access preloaded lessons in Maths and Science
-Browse topics easily
-No internet needed
-❓ Ask Doubts Without Worry
-Type your question anytime
-If offline → it gets saved
-If online → you get a clear, step-by-step answer
-🔄 Smart Sync
-As soon as internet comes back, everything updates automatically
-Your saved doubts get answered without doing anything
-🌐 Made for Everyone
-Works on low-end devices
-Supports multiple languages (planned)
 🏗️ How It Works (Behind the Scenes)
 React Web App
       ↓
@@ -54,6 +39,7 @@ AI Service
 PostgreSQL Database
       ↓
 Browser Storage (Offline)
+
 🛠️ Tech Stack
 Frontend: React
 Backend: Node.js (Express)
@@ -61,15 +47,18 @@ Database: PostgreSQL
 AI: API-based integration
 Offline Support: Service Workers, IndexedDB
 Voice (Optional): Web Speech API
+
 ⚙️ Simple Flow
 Open the app in your browser
 No internet? → Use offline content or save your doubt
 Internet comes back → answers appear automatically
 Continue learning without interruption
+
 🎯 Who Is This For?
 Students in rural or low-connectivity areas
 Anyone using low-end smartphones
 Learners who don’t have access to tutors
+
 🔥 What Makes It Different
 
 👉 It doesn’t wait for internet — it works around it
